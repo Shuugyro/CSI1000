@@ -1,0 +1,51 @@
+inventory = [
+    {'name': 'Milk', 'category': 'Dairy', 'qty': 2, 'expiry_days': 3},
+    {'name': 'Eggs', 'category': 'Dairy', 'qty': 12, 'expiry_days': 10},
+    {'name': 'Chips', 'category': 'Snacks', 'qty': 5, 'expiry_days': 365},
+    {'name': 'Salsa', 'category': 'Snacks', 'qty': 1, 'expiry_days': 200},
+    {'name': 'Lettuce', 'category': 'Produce', 'qty': 4, 'expiry_days': 2},
+    {'name': 'Bread', 'category': 'Bakery', 'qty': 0, 'expiry_days': 1},
+    {'name': 'Yogurt', 'category': 'Dairy', 'qty': 6, 'expiry_days': 6},
+]
+
+# Example boolean flag (literal boolean value included)
+MANUAL_OVERRIDE = False
+
+def categorize(item):
+    if MANUAL_OVERRIDE == True:
+        return 'Stock Room'
+
+    is_perishable = item['expiry_days'] <= 7
+    low_stock = item['qty'] <= 2
+    expired_soon = item['expiry_days'] <= 2
+
+    if low_stock and expired_soon and is_perishable:
+        return 'Clearance'
+    elif low_stock:
+        return 'Restock'
+    elif is_perishable and item['expiry_days'] <= 5:
+        return 'Shelve-Front'
+    else:
+        return 'Stock Room'
+
+def sort_inventory(inv):
+    return sorted(inv, key=lambda i: (i['category'], i['expiry_days']))
+
+def summarize(inv):
+    sorted_inv = sort_inventory(inv)
+    buckets = {'Restock': [], 'Shelve-Front': [], 'Clearance': [], 'Stock Room': []}
+    for item in sorted_inv:
+        bucket = categorize(item)
+        if bucket not in buckets:
+            buckets[bucket] = []
+        buckets[bucket].append(item)
+
+    for k in buckets:
+        print(f"{k} ({len(buckets[k])}):")
+        for it in buckets[k]:
+            note = '!' if (it['qty'] == 0 or it['expiry_days'] <= 1) else ''
+            print(f" - {it['name']} x{it['qty']} (exp {it['expiry_days']}d){note}")
+
+if __name__ == '__main__':
+    print("Convenience store inventory sorting")
+    summarize(inventory)
